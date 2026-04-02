@@ -28,7 +28,13 @@ typedef struct {
   char *token;
   uint32_t max_clients;
   Client *clients;
+  pthread_mutex_t mutex;
 } Server;
+
+typedef struct {
+  Server *server;
+  Client *client;
+} ClientThreadArgs;
 
 char *generate_token() {
   if (DEBUG) {
@@ -39,8 +45,24 @@ char *generate_token() {
   }
 }
 
-void *handle_client(void *arg) {
-  Client *client = (Client *)arg;
+void broadcast_message(Server *s, Client *c, char *message) {
+  pthread_mutex_lock(&s->mutex);
+
+  for (size_t i = 0; i < s->max_clients; i++) {
+    if (s->clients[i].fd > 0) {
+      send(s->clients[i].fd, message, strlen(message), 0);
+    }
+  }
+
+  pthread_mutex_unlock(&s->mutex);
+}
+
+void *handle_client(void *args) {
+  ClientThreadArgs *ctargs = (ClientThreadArgs *)args;
+  Server *server = ctargs->server;
+  Client *client = ctargs->client;
+  free(ctargs);
+
   send(client->fd, NEW_CONN_MSG, strlen(NEW_CONN_MSG), 0);
 
   while (true) {
@@ -50,6 +72,8 @@ void *handle_client(void *arg) {
     if (bytes <= 0) {
       break;
     }
+
+    broadcast_message(server, client, buffer);
 
     printf("INFO: Client (%d) sent: %s", client->fd, buffer);
   }
@@ -72,13 +96,17 @@ void accept_client(Server *s, int client_fd) {
   }
 
   if (client == NULL) {
-    printf("ERROR: New client attempted to join, but server is full\n");
+    printf("INFO: New client attempted to join, but server is full\n");
     close(client_fd);
     return;
   }
 
   client->fd = client_fd;
-  pthread_create(&client->thread, NULL, handle_client, (void *)client);
+
+  ClientThreadArgs *args = malloc(sizeof(ClientThreadArgs));
+  args->client = client;
+  args->server = s;
+  pthread_create(&client->thread, NULL, handle_client, (void *)args);
 }
 
 void server_init(Server *s) {
@@ -103,6 +131,8 @@ void server_init(Server *s) {
     exit(1);
   }
 
+  pthread_mutex_init(&s->mutex, NULL);
+
   printf("INFO: Listening on port '%d'\n", PORT);
   printf("INFO: Token is '%s'\n", s->token);
 
@@ -110,6 +140,8 @@ void server_init(Server *s) {
     int client_fd = accept(s->fd, 0, 0);
     accept_client(s, client_fd);
   }
+
+  pthread_mutex_destroy(&s->mutex);
 }
 
 int main(void) {
