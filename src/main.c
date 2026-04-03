@@ -1,5 +1,5 @@
+#include "utils/str_utils.h"
 #include <arpa/inet.h>
-#include <ctype.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -14,8 +14,7 @@
 #define PORT 8080
 #define MAX_CLIENTS 1000
 #define DEBUG_TOKEN "dev"
-#define NEW_CONN_MSG                                                           \
-  "Welcome! Type '/connect <token>' to authorize and start chatting\n"
+#define NEW_CONN_MSG "Welcome!\n"
 
 typedef struct {
   int32_t fd;
@@ -37,18 +36,6 @@ typedef struct {
   Server *server;
   Client *client;
 } ClientThreadArgs;
-
-bool str_is_empty(char *str, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    if (str[i] == 0) {
-      return true;
-    }
-    if (isspace(str[i]) == false) {
-      return false;
-    }
-  }
-  return true;
-}
 
 char *generate_token() {
   if (DEBUG) {
