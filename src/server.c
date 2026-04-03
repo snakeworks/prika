@@ -52,8 +52,10 @@ static void *handle_client(void *args) {
     }
 
     if (str_starts_with(buffer, '/')) {
+      char cmd_result[MAX_RESULT];
       printf("INFO: Client (%d) executed command: %s", client->fd, buffer);
-      cmd_exec(server, client, buffer);
+      cmd_exec(server, client, buffer, cmd_result);
+      send(client->fd, cmd_result, strlen(cmd_result), 0);
     } else {
       char *msg;
       asprintf(&msg, "%s> %s", client->nickname, buffer);
