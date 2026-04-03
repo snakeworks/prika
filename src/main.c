@@ -46,7 +46,7 @@ char *generate_token() {
   }
 }
 
-void broadcast_message(Server *s, Client *c, char *message) {
+void broadcast_message(Server *s, char *message) {
   pthread_mutex_lock(&s->mutex);
 
   for (size_t i = 0; i < s->max_clients; i++) {
@@ -76,7 +76,7 @@ void *handle_client(void *args) {
 
     char *msg;
     asprintf(&msg, "%s> %s", client->nickname, buffer);
-    broadcast_message(server, client, msg);
+    broadcast_message(server, msg);
 
     printf("INFO: Client (%d) sent: %s", client->fd, buffer);
   }
