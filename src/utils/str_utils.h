@@ -9,5 +9,6 @@
 
 bool str_is_empty(char *str, size_t len);
 bool str_starts_with(char *str, char c);
+void str_trim(char *str);
 
 #endif

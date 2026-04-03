@@ -36,6 +36,7 @@ static void *handle_client(void *args) {
   Client *client = ctargs->client;
   free(ctargs);
 
+  sprintf(client->nickname, "user_%d", client->fd);
   send(client->fd, NEW_CONN_MSG, strlen(NEW_CONN_MSG), 0);
 
   while (true) {
@@ -51,15 +52,15 @@ static void *handle_client(void *args) {
     }
 
     if (str_starts_with(buffer, '/')) {
-      cmd_exec(buffer);
+      printf("INFO: Client (%d) executed command: %s", client->fd, buffer);
+      cmd_exec(server, client, buffer);
     } else {
       char *msg;
       asprintf(&msg, "%s> %s", client->nickname, buffer);
       broadcast_message(server, msg);
       free(msg);
+      printf("INFO: Client (%d) sent: %s", client->fd, buffer);
     }
-
-    printf("INFO: Client (%d) sent: %s", client->fd, buffer);
   }
 
   close(client->fd);
@@ -86,7 +87,6 @@ void accept_client(Server *s, int client_fd) {
   }
 
   client->fd = client_fd;
-  asprintf(&client->nickname, "user_%d", client_fd);
 
   ClientThreadArgs *args = malloc(sizeof(ClientThreadArgs));
   args->client = client;

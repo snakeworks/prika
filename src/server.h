@@ -8,13 +8,14 @@
 #define DEBUG true
 #define PORT 8080
 #define MAX_CLIENTS 1000
+#define MAX_NICK 64
 #define DEBUG_TOKEN "dev"
 #define NEW_CONN_MSG "Welcome!\n"
 
 typedef struct {
   int32_t fd;
   bool authorized;
-  char *nickname;
+  char nickname[MAX_NICK];
   pthread_t thread;
 } Client;
 
