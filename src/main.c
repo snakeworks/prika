@@ -19,6 +19,7 @@
 typedef struct {
   int32_t fd;
   bool authorized;
+  char *nickname;
   pthread_t thread;
 } Client;
 
@@ -73,7 +74,9 @@ void *handle_client(void *args) {
       break;
     }
 
-    broadcast_message(server, client, buffer);
+    char *msg;
+    asprintf(&msg, "%s> %s", client->nickname, buffer);
+    broadcast_message(server, client, msg);
 
     printf("INFO: Client (%d) sent: %s", client->fd, buffer);
   }
@@ -102,6 +105,7 @@ void accept_client(Server *s, int client_fd) {
   }
 
   client->fd = client_fd;
+  asprintf(&client->nickname, "user_%d", client_fd);
 
   ClientThreadArgs *args = malloc(sizeof(ClientThreadArgs));
   args->client = client;
@@ -114,7 +118,7 @@ void server_init(Server *s) {
   int32_t opt = 1;
   setsockopt(s->fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-  struct sockaddr_in addr = {AF_INET, htons(PORT), 0};
+  struct sockaddr_in addr = {AF_INET, htons(s->port), 0};
   int b = bind(s->fd, (struct sockaddr *)&addr, sizeof(addr));
   if (b != 0) {
     printf("ERROR: Failed to bind port\n");
