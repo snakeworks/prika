@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -37,6 +38,18 @@ typedef struct {
   Client *client;
 } ClientThreadArgs;
 
+bool str_is_empty(char *str, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    if (str[i] == 0) {
+      return true;
+    }
+    if (isspace(str[i]) == false) {
+      return false;
+    }
+  }
+  return true;
+}
+
 char *generate_token() {
   if (DEBUG) {
     return DEBUG_TOKEN;
@@ -74,9 +87,14 @@ void *handle_client(void *args) {
       break;
     }
 
+    if (str_is_empty(buffer, 256)) {
+      continue;
+    }
+
     char *msg;
     asprintf(&msg, "%s> %s", client->nickname, buffer);
     broadcast_message(server, msg);
+    free(msg);
 
     printf("INFO: Client (%d) sent: %s", client->fd, buffer);
   }
