@@ -11,3 +11,10 @@ bool str_is_empty(char *str, size_t len) {
   }
   return true;
 }
+
+bool str_starts_with(char *str, char c) {
+  if (str == NULL) {
+    return false;
+  }
+  return str[0] == c;
+}
