@@ -24,6 +24,8 @@ void cmd_exec(Server *s, Client *c, char *input, char result[MAX_RESULT]) {
 
   if (strcmp(cmd, "nick") == 0) {
     cmd_nick(s, c, argc, argv, result);
+  } else {
+    sprintf(result, "Unknown command '%s'\n", cmd);
   }
 }
 
