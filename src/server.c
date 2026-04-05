@@ -9,15 +9,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-char *generate_token() {
-  if (DEBUG) {
-    return DEBUG_TOKEN;
-  } else {
-    // TODO : Generate token
-    return "";
-  }
-}
-
 void broadcast_message(Server *s, char *message) {
   pthread_mutex_lock(&s->mutex);
 
@@ -110,7 +101,7 @@ void server_init(Server *s) {
 
   s->clients = calloc(s->max_clients, sizeof(Client));
 
-  s->token = generate_token();
+  s->password = NULL;
 
   int l = listen(s->fd, 10);
   if (l != 0) {
@@ -121,7 +112,6 @@ void server_init(Server *s) {
   pthread_mutex_init(&s->mutex, NULL);
 
   printf("INFO: Listening on port '%d'\n", PORT);
-  printf("INFO: Token is '%s'\n", s->token);
 
   while (true) {
     int client_fd = accept(s->fd, 0, 0);

@@ -9,7 +9,6 @@
 #define PORT 8080
 #define MAX_CLIENTS 1000
 #define MAX_NICK 64
-#define DEBUG_TOKEN "dev"
 #define NEW_CONN_MSG "Welcome!\n"
 
 typedef struct {
@@ -22,7 +21,7 @@ typedef struct {
 typedef struct {
   int32_t fd;
   uint16_t port;
-  char *token;
+  char *password;
   uint32_t max_clients;
   Client *clients;
   pthread_mutex_t mutex;
@@ -33,7 +32,6 @@ typedef struct {
   Client *client;
 } ClientThreadArgs;
 
-char *generate_token();
 void broadcast_message(Server *s, char *message);
 void accept_client(Server *s, int client_fd);
 void server_init(Server *s);
