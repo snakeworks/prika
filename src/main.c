@@ -2,8 +2,8 @@
 
 int main(void) {
   Server server = {
-    .max_clients = MAX_CLIENTS,
-    .port = PORT,
+    .max_clients = 1000,
+    .port = 8080,
     .password = "test"
   };
 

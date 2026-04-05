@@ -6,8 +6,6 @@
 #include <stdint.h>
 
 #define DEBUG true
-#define PORT 8080
-#define MAX_CLIENTS 1000
 #define MAX_NICK 64
 
 typedef struct {

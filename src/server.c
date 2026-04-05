@@ -142,7 +142,7 @@ void server_init(Server *s) {
 
   pthread_mutex_init(&s->mutex, NULL);
 
-  printf("INFO: Listening on port '%d'\n", PORT);
+  printf("INFO: Listening on port '%d'\n", s->port);
 
   while (true) {
     int client_fd = accept(s->fd, 0, 0);
