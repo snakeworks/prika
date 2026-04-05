@@ -13,7 +13,7 @@ void broadcast_message(Server *s, char *message) {
   pthread_mutex_lock(&s->mutex);
 
   for (size_t i = 0; i < s->max_clients; i++) {
-    if (s->clients[i].fd > 0) {
+    if (s->clients[i].fd > 0 && s->clients[i].authorized) {
       send(s->clients[i].fd, message, strlen(message), 0);
     }
   }
@@ -28,7 +28,19 @@ static void *handle_client(void *args) {
   free(ctargs);
 
   sprintf(client->nickname, "user_%d", client->fd);
-  send(client->fd, NEW_CONN_MSG, strlen(NEW_CONN_MSG), 0);
+
+  char *welcome_msg = "Welcome!\n";
+  char *server_passw_msg = "Server is password protected. Enter the password: ";
+  char *wrong_passw_msg = "Password is incorrect. Try again: ";
+  char *ncmsg = server->password == NULL ? welcome_msg : server_passw_msg;
+  send(client->fd, ncmsg, strlen(ncmsg), 0);
+
+  if (server->password == NULL) {
+    client->authorized = true;
+    printf("INFO: Client (%d) connected and authorized\n", client->fd);
+  } else {
+    printf("INFO: Client (%d) connected, waiting for authorization\n", client->fd);
+  }
 
   while (true) {
     char buffer[256] = {0};
@@ -40,6 +52,26 @@ static void *handle_client(void *args) {
 
     if (str_is_empty(buffer, 256)) {
       continue;
+    }
+
+    if (client->authorized == false) {
+      // TODO: Maybe a little bit hacky?
+      for (size_t i = 0; i < 256; i++) {
+        if (isspace(buffer[i])) {
+          buffer[i] = '\0';
+          break;
+        }
+      }
+
+      if (strcmp(server->password, buffer) == 0) {
+        client->authorized = true;
+        send(client->fd, welcome_msg, strlen(welcome_msg), 0);
+        printf("INFO: Client (%d) authorized\n", client->fd);
+        continue;
+      } else {
+        send(client->fd, wrong_passw_msg, strlen(wrong_passw_msg), 0);
+        continue;
+      }
     }
 
     if (str_starts_with(buffer, '/')) {
@@ -59,8 +91,9 @@ static void *handle_client(void *args) {
   close(client->fd);
   printf("INFO: Client (%d) disconnected\n", client->fd);
 
-  // Clean up
+  // TODO: Maybe just deallocate the entire client in the future
   client->fd = 0;
+  client->authorized = false;
   pthread_exit(&client->thread);
 }
 
@@ -100,8 +133,6 @@ void server_init(Server *s) {
   }
 
   s->clients = calloc(s->max_clients, sizeof(Client));
-
-  s->password = NULL;
 
   int l = listen(s->fd, 10);
   if (l != 0) {

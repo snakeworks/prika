@@ -9,7 +9,6 @@
 #define PORT 8080
 #define MAX_CLIENTS 1000
 #define MAX_NICK 64
-#define NEW_CONN_MSG "Welcome!\n"
 
 typedef struct {
   int32_t fd;
