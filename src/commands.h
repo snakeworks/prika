@@ -7,5 +7,6 @@
 
 void cmd_exec(Server *s, Client *c, char *input, char result[MAX_RESULT]);
 void cmd_nick(Server *s, Client *c, uint32_t argc, char **argv, char result[MAX_RESULT]);
+void cmd_me(Server *s, Client *c, uint32_t argc, char **argv, char result[MAX_RESULT]);
 
 #endif

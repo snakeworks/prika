@@ -9,6 +9,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+char *role_to_str(Role role) {
+  switch (role) {
+  case ROLE_USER:
+    return "User";
+  case ROLE_ADMIN:
+    return "Admin";
+  }
+  return "";
+}
+
 void broadcast_message(Server *s, char *message) {
   pthread_mutex_lock(&s->mutex);
 
@@ -39,7 +49,8 @@ static void *handle_client(void *args) {
     client->authorized = true;
     printf("INFO: Client (%d) connected and authorized\n", client->fd);
   } else {
-    printf("INFO: Client (%d) connected, waiting for authorization\n", client->fd);
+    printf("INFO: Client (%d) connected, waiting for authorization\n",
+           client->fd);
   }
 
   while (true) {

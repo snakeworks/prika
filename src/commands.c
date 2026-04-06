@@ -24,6 +24,8 @@ void cmd_exec(Server *s, Client *c, char *input, char result[MAX_RESULT]) {
 
   if (strcmp(cmd, "nick") == 0) {
     cmd_nick(s, c, argc, argv, result);
+  } else if (strcmp(cmd, "me") == 0) {
+    cmd_me(s, c, argc, argv, result);
   } else {
     sprintf(result, "Unknown command '%s'\n", cmd);
   }
@@ -42,4 +44,8 @@ void cmd_nick(Server *s, Client *c, uint32_t argc, char **argv, char result[MAX_
   argv[1][MAX_NICK] = '\0'; // idk if necessary?
   sprintf(c->nickname, "%s", argv[1]);
   sprintf(result, "Your nickname is now '%s'\n", c->nickname);
+}
+
+void cmd_me(Server *s, Client *c, uint32_t argc, char **argv, char result[MAX_RESULT]) {
+  sprintf(result, "Nickname: %s\nRole: %s\n", c->nickname, role_to_str(c->role));
 }

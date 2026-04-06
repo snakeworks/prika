@@ -8,9 +8,15 @@
 #define DEBUG true
 #define MAX_NICK 64
 
+typedef enum {
+  ROLE_USER = 0,
+  ROLE_ADMIN = 1,
+} Role;
+
 typedef struct {
   int32_t fd;
   bool authorized;
+  Role role;
   char nickname[MAX_NICK];
   pthread_t thread;
 } Client;
@@ -29,6 +35,7 @@ typedef struct {
   Client *client;
 } ClientThreadArgs;
 
+char *role_to_str(Role role);
 void broadcast_message(Server *s, char *message);
 void accept_client(Server *s, int client_fd);
 void server_init(Server *s);
